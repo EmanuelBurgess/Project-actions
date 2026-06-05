@@ -1,0 +1,39 @@
+---
+- name: Install Docker and Run Apache
+  hosts: webservers
+  become: yes
+  tasks:
+
+    - name: Update apt packages
+      apt:
+        update_cache: yes
+
+    - name: Install required system packages
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+
+    - name: Ensure Docker is started and enabled
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Pull and start the official Apache Docker container
+      docker_container:
+        name: my-apache-server
+        image: httpd:2.4
+        state: started
+        restart_policy: always
+        # Maps port 80 of your EC2 instance to port 80 inside the container
+        published_ports:
+          - "80:80"
